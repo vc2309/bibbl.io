@@ -76,11 +76,23 @@ def test_lambda_handler(apigw_event):
     # assert "location" in data.dict_keys()
 
 
-def test_fetch_notes(insert_items):
-    request = {
-        "TableName": os.environ["TABLE_NAME"],
-        "IndexName": "upload_uri",
-        "KeyConditionExpression": "upload_uri = :v1",
-        "ExpressionAttributeValues": {":v1": {"S": "vishnu.com"}},
-    }
-    print(insert_items.query(**request))
+def test_fetch_notes(insert_items, notes_dao):
+    expected_results = [
+        {
+            "note-id": {"S": "example-note-01"},
+            "text": {"S": "abcd"},
+            "upload_uri": {"S": "vishnu.com"},
+        }
+    ]
+
+    actual_results = notes_dao.get_notes_by_upload_uri("vishnu.com")
+
+    assert expected_results == actual_results
+
+
+def test_fetch_notes_non_existent_item(notes_dao):
+    assert notes_dao.get_notes_by_upload_uri("vishnu.com") == []
+
+
+def test_fetch_notes_non_string_uri(notes_dao):
+    assert notes_dao.get_notes_by_upload_uri(5) == []

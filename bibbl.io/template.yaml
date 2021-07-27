@@ -52,11 +52,9 @@ Resources:
       ProvisionedThroughput: 
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
-
-
-Policies:
-  - DynamoDBCrudPolicy:
-      TableName: !Ref MyTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MyTable
 
 
 Outputs:
@@ -72,3 +70,6 @@ Outputs:
   HelloWorldFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt HelloWorldFunctionRole.Arn
+  TableName:
+    Value: !Ref MyTable
+    Description: Table name of the newly created DynamoDB table
