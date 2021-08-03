@@ -79,7 +79,7 @@ def test_lambda_handler(apigw_event):
 def test_fetch_notes(insert_items, notes_dao):
     expected_results = [
         {
-            "note-id": {"S": "example-note-01"},
+            "note_id": {"S": "example-note-01"},
             "text": {"S": "abcd"},
             "upload_uri": {"S": "vishnu.com"},
         }

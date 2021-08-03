@@ -1,5 +1,7 @@
 import json
-
+from dao import NotesDAO
+from models import Note
+from engine import SmartNoteEngine
 # import requests
 
 
@@ -32,7 +34,8 @@ def lambda_handler(event, context):
     #     print(e)
 
     #     raise e
-
+    dao  = NotesDAO()
+    print(dao)
     return {
         "statusCode": 200,
         "body": json.dumps(
@@ -42,3 +45,19 @@ def lambda_handler(event, context):
             }
         ),
     }
+
+notes_dao = NotesDAO()
+smart_note_engine = SmartNoteEngine()
+def generate_smart_notes(upload_uri : str) -> None :
+    """
+    Collect all Notes corresponding to the imported file at `upload_uri` and generate and store SmartNote objects from these Notes.
+    
+    all_notes = notes_dao.get_notes_for_uri(upload_uri)
+    smart_notes = smart_note_engine.generate(all_notes)
+    for smart_note in smart_notes:
+        smart_notes.dao.write_smart_note(smart_note)
+    """
+    records = notes_dao.get_notes_by_upload_uri()
+    notes = [Note.create_note_from_db_item(record) for record in records]
+    smart_notes = smart_note_engine.generate_smart_notes(notes)
+    print(smart_notes)

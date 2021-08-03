@@ -27,8 +27,16 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MyTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SmartNoteTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SnapshotTable
+  
   MyTable:
-    Type: AWS::DynamoDB:Table
+    Type: AWS::DynamoDB::Table
     Properties:
       TableName: my-table
       AttributeDefinitions:
@@ -40,21 +48,79 @@ Resources:
         - AttributeName: note_id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        IndexName: "upload_uri"
-        KeySchema:
-          - AttributeName: "upload_uri"
-            KeyType: "HASH"
-        Projection:
-          ProjectionType: "ALL"
-        ProvisionedThroughput: 
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        - IndexName: "upload_uri"
+          KeySchema:
+            - AttributeName: "upload_uri"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput: 
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
       ProvisionedThroughput: 
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref MyTable
+  SmartNoteTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: smart-notes
+      AttributeDefinitions:
+        - AttributeName: smart_note_id
+          AttributeType: S
+        - AttributeName: upload_uri
+          AttributeType: S
+      KeySchema:
+        - AttributeName: smart_note_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: "upload_uri"
+          KeySchema:
+            - AttributeName: "upload_uri"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput: 
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  SnapshotTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: snapshots
+      AttributeDefinitions:
+        - AttributeName: snapshot_id
+          AttributeType: S
+        - AttributeName: upload_uri
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: smart_note_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: "upload_uri"
+          KeySchema:
+            - AttributeName: "upload_uri"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput: 
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: user_id
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput: 
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
 
 
 Outputs:
@@ -70,6 +136,12 @@ Outputs:
   HelloWorldFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt HelloWorldFunctionRole.Arn
-  TableName:
+  NotesTableDB:
     Value: !Ref MyTable
     Description: Table name of the newly created DynamoDB table
+  SmartNoteTableDB:
+    Value: !Ref SmartNoteTable
+    Description: Table name of the newly created DynamoDB table 
+  SnapshotTableDB:
+    Value: !Ref SnapshotTable
+    Description: Table name of the newly created DynamoDB table 
