@@ -1,10 +1,11 @@
 import boto3
 import pytest
-
 import os
 
 os.environ["TABLE_NAME"] = "my-table"
+os.environ["DD_ENDPOINT"] = "http://localhost:8000"
 db_client = boto3.client("dynamodb", endpoint_url="http://localhost:8000")
+from dao import NotesDAO
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -49,3 +50,8 @@ def insert_items():
     db_client.delete_item(
         **{"TableName": "my-table", "Key": {"note-id": {"S": "example-note-01"}}}
     )
+
+
+@pytest.fixture()
+def notes_dao():
+    return NotesDAO()
