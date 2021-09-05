@@ -1,14 +1,16 @@
-class Note(object):
+import uuid
+
+
+class NoteBase(object):
     def __init__(
         self,
-        note_id: str,
         upload_uri: str,
         user_id: str,
         book_id: str,
         text: str,
         metadata: dict = None,
+        create_uuid: bool = True,
     ) -> None:
-        self.note_id = note_id
         self.upload_uri = upload_uri
         self.user_id = user_id
         self.book_id = book_id
@@ -16,20 +18,18 @@ class Note(object):
         self.text = text
 
     @classmethod
-    def create_note_from_db_item(cls, item: dict):
+    def create_note_base_from_db_item(cls, item: dict):
         """
         Return a Note object from the given 'item' . The 'item' must be a valid Note record from a DynamoDB query.
         """
-        note_id = item.get("note-id")
         upload_uri = item.get("upload_uri")
         user_id = item.get("user_id")
         book_id = item.get("book_id")
         text = item.get("text")
 
-        if not (note_id and upload_uri and user_id):
+        if not (upload_uri and user_id):
             raise ValueError("Missing values for note_id or upload_uri or user_id")
 
-        note_id_val = note_id.get("S")
         upload_uri_val = upload_uri.get("S")
         book_id_val = ""
         if book_id:
@@ -39,21 +39,12 @@ class Note(object):
         if text:
             text_val = text.get("S")
         return cls(
-            note_id=note_id_val,
             upload_uri=upload_uri_val,
             book_id=book_id_val,
             user_id=user_id_val,
             text=text_val,
+            create_uuid=False,
         )
-
-    @property
-    def note_id(self):
-        return self._note_id
-
-    @note_id.setter
-    def note_id(self, note_id):
-        if not hasattr(self, "_note_id"):
-            self._note_id = note_id
 
     @property
     def upload_uri(self):
@@ -99,3 +90,46 @@ class Note(object):
     def metadata(self, metadata):
         if not hasattr(self, "_metadata"):
             self._metadata = metadata
+
+
+class Note(NoteBase):
+    def __init__(
+        self,
+        upload_uri: str,
+        user_id: str,
+        book_id: str,
+        text: str,
+        metadata: dict = None,
+        note_id: str = None,
+        create_uuid: bool = True,
+    ) -> None:
+        super().__init__(
+            upload_uri=upload_uri,
+            user_id=user_id,
+            book_id=book_id,
+            text=text,
+            metadata=metadata,
+        )
+        if note_id:
+            self.note_id = note_id
+        elif create_uuid:
+            self.note_id = str(uuid.uuid4())
+
+    @property
+    def note_id(self):
+        return self._note_id
+
+    @note_id.setter
+    def note_id(self, note_id):
+        if not hasattr(self, "_note_id"):
+            self._note_id = note_id
+
+    @classmethod
+    def create_note_from_db_item(cls, item: dict):
+        instance = cls.create_note_base_from_db_item(item)
+        note_id = item.get("note_id")
+        if not note_id:
+            raise ValueError("note_id is missing in item")
+        note_id_val = note_id.get("S")
+        instance.note_id = note_id_val
+        return instance
