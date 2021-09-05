@@ -2,13 +2,14 @@ import json
 import urllib
 import boto3
 import uuid
+import os
 from bs4 import BeautifulSoup
-from engine.raw_note_engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine
-from dao.raw_notes_dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
-from dao.s3_dao import S3Dao
-RAW_NOTES_TABLE = 'raw-notes'
-SMART_NOTES_TABLE = 'smart-notes'
-SNAP_SHOTS_TABLE = 'snap-shots'
+from lambda_folder.engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine
+from lambda_folder.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
+from lambda_folder.dao import S3Dao
+RAW_NOTES_TABLE = os.environ.get('') or 'raw-notes'
+SMART_NOTES_TABLE = os.environ.get('') or 'smart-notes'
+SNAP_SHOTS_TABLE = os.environ.get('') or 'snap-shots'
 
 def note_file_handler(event, context):
     print("Object Uploaded in S3")
@@ -35,7 +36,7 @@ def note_file_handler(event, context):
     snaps = snap_engine.create_snaps(object_key, smart_notes_dao)
     print("Saving snap shots")
     snap_shot_dao = SnapShotsDAO(SNAP_SHOTS_TABLE)
-    snap_shot_dao.save_notes(snaps)
+    snap_shot_dao.save_snapshot(snaps)
 
 
 def test_handler(event, context):

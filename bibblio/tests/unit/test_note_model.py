@@ -1,4 +1,4 @@
-from models import Note, SmartNote
+from lambda_folder.models import Note, SmartNote
 import pytest
 
 
