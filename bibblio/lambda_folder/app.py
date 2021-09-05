@@ -4,9 +4,9 @@ import boto3
 import uuid
 import os
 from bs4 import BeautifulSoup
-from lambda_folder.engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine
-from lambda_folder.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
-from lambda_folder.dao import S3Dao
+from pkg.engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine
+from pkg.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
+from pkg.dao import S3Dao
 RAW_NOTES_TABLE = os.environ.get('') or 'raw-notes'
 SMART_NOTES_TABLE = os.environ.get('') or 'smart-notes'
 SNAP_SHOTS_TABLE = os.environ.get('') or 'snap-shots'

@@ -1,28 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  bibbl.io
+Description: 'bibbl.io
 
   Sample SAM Template for bibbl.io
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+  '
 Globals:
   Function:
     Timeout: 900
     Environment:
       Variables:
         TABLE_NAME: raw-notes
-
 Resources:
   NoteFileFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: lambda_folder/
       Handler: app.note_file_handler
       Runtime: python3.8
       Events:
-        NoteFileFunctionApi: # change this to s3 event
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        NoteFileFunctionApi:
+          Type: Api
           Properties:
             Path: /rawnotes
             Method: get
@@ -32,7 +30,7 @@ Resources:
             Bucket:
               Ref: NoteFileBucket
             Events:
-              - 's3:ObjectCreated:*'
+            - s3:ObjectCreated:*
       Policies:
       - AmazonDynamoDBFullAccess
       - AmazonS3FullAccess
@@ -41,23 +39,23 @@ Resources:
     Properties:
       TableName: raw-notes
       AttributeDefinitions:
-        - AttributeName: note_id
-          AttributeType: S
-        - AttributeName: s3_upload_object
-          AttributeType: S
+      - AttributeName: note_id
+        AttributeType: S
+      - AttributeName: s3_upload_object
+        AttributeType: S
       KeySchema:
-        - AttributeName: note_id
-          KeyType: HASH
+      - AttributeName: note_id
+        KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: "s3_upload_object"
-          KeySchema:
-            - AttributeName: "s3_upload_object"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+      - IndexName: s3_upload_object
+        KeySchema:
+        - AttributeName: s3_upload_object
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
@@ -67,35 +65,35 @@ Resources:
       CorsConfiguration:
         CorsRules:
         - AllowedHeaders:
-            - "*"
+          - '*'
           AllowedMethods:
-            - GET
-            - PUT
-            - HEAD
+          - GET
+          - PUT
+          - HEAD
           AllowedOrigins:
-            - "*"
+          - '*'
   SmartNoteTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: smart-notes
       AttributeDefinitions:
-        - AttributeName: smart_note_id
-          AttributeType: S
-        - AttributeName: s3_upload_object
-          AttributeType: S
+      - AttributeName: smart_note_id
+        AttributeType: S
+      - AttributeName: s3_upload_object
+        AttributeType: S
       KeySchema:
-        - AttributeName: smart_note_id
-          KeyType: HASH
+      - AttributeName: smart_note_id
+        KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: "s3_upload_object"
-          KeySchema:
-            - AttributeName: "s3_upload_object"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+      - IndexName: s3_upload_object
+        KeySchema:
+        - AttributeName: s3_upload_object
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
@@ -104,46 +102,46 @@ Resources:
     Properties:
       TableName: snap-shots
       AttributeDefinitions:
-        - AttributeName: snap_shot_id
-          AttributeType: S
-        - AttributeName: user_id
-          AttributeType: S
-        - AttributeName: delivery_date
-          AttributeType: S
+      - AttributeName: snap_shot_id
+        AttributeType: S
+      - AttributeName: user_id
+        AttributeType: S
+      - AttributeName: delivery_date
+        AttributeType: S
       KeySchema:
-        - AttributeName: snap_shot_id
-          KeyType: HASH
+      - AttributeName: snap_shot_id
+        KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: "user_id"
-          KeySchema:
-            - AttributeName: "user_id"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
-        - IndexName: "delivery_date"
-          KeySchema:
-            - AttributeName: "delivery_date"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+      - IndexName: user_id
+        KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+      - IndexName: delivery_date
+        KeySchema:
+        - AttributeName: delivery_date
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
   TestFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
-      CodeUri: lambda_folder/
+      CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-15ao8arzo1tzz/bibbl/00cf9ec66122de92bad89a85ce1af33e
       Handler: app.test_handler
       Runtime: python3.8
       Events:
-        TestApi: # change this to s3 event
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        TestApi:
+          Type: Api
           Properties:
             Path: /testing
             Method: get
@@ -152,35 +150,40 @@ Resources:
     Properties:
       TableName: user-table
       AttributeDefinitions:
-        - AttributeName: user_id
-          AttributeType: S
+      - AttributeName: user_id
+        AttributeType: S
       KeySchema:
-        - AttributeName: user_id
-          KeyType: HASH
+      - AttributeName: user_id
+        KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
-
-
+  SnapDeliveryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-15ao8arzo1tzz/bibbl/00cf9ec66122de92bad89a85ce1af33e
+      Handler: app.snap_delivery_handler
+      Runtime: python3.8
+      Events:
+        InvocationLevel:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 8 * * ? *)
+      Policies:
+      - AmazonDynamoDBFullAccess
+      - AmazonS3FullAccess
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   TestApi:
-    Description: "API Gateway endpoint URL for Prod stage for Test function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/testing/"
+    Description: API Gateway endpoint URL for Prod stage for Test function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/testing/
   NoteFileFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt NoteFileFunction.Arn
-  # HelloWorldFunctionIamRole:
-  #   Description: "Implicit IAM Role created for Hello World function"
-  #   Value: !GetAtt HelloWorldFunctionRole.Arn
+    Description: Hello World Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - NoteFileFunction
+      - Arn
   NotesTableDB:
-    Value: !Ref RawNoteTable
+    Value:
+      Ref: RawNoteTable
     Description: Table name of the newly created DynamoDB table
-  # SmartNoteTableDB:
-  #   Value: !Ref SmartNoteTable
-  #   Description: Table name of the newly created DynamoDB table
-  # SnapshotTableDB:
-  #   Value: !Ref SnapshotTable
-  #   Description: Table name of the newly created DynamoDB table

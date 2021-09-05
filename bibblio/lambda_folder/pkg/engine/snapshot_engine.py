@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 import uuid
-from lambda_folder.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
+from ..dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
 
 class SnapShotEngine(object):
     def __init__(self) -> None:

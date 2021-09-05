@@ -1,4 +1,4 @@
-from lambda_folder.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
+from ..dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
 import uuid
 class SmartNoteEngine(object):
     def __init__(self) -> None:

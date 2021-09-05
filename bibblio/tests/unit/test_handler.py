@@ -3,7 +3,7 @@
 
 # import json
 # import pytest
-# from lambda_folder import app
+# from pkg import app
 # # import os
 # # import boto3
 # # from engine.raw_note_engine import RawNoteEngine

@@ -7,7 +7,7 @@ os.environ["SMART_NOTE_TABLE_NAME"] = "smart-notes-table-test"
 os.environ["SNAPSHOTS_TABLE_NAME"] = "snapshots-table-test"
 os.environ["DB_ENDPOINT"] = "http://localhost:8000"
 db_client = boto3.client("dynamodb", endpoint_url="http://localhost:8000")
-from lambda_folder.dao import NotesDAO, SmartNotesDAO, SnapShotsDAO, RawNotesDAO
+from lambda_folder.pkg.dao import NotesDAO, SmartNotesDAO, SnapShotsDAO, RawNotesDAO
 
 
 @pytest.fixture(autouse=True, scope="session")

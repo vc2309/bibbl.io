@@ -6,6 +6,6 @@ codeuri = "/Users/vishnuchopra/Project/bibbl.io/bibblio/lambda_folder"
 runtime = "python3.8"
 source_md5 = ""
 packagetype = "Zip"
-functions = ["NoteFileFunction", "TestFunction"]
+functions = ["NoteFileFunction"]
 
 [layer_build_definitions]

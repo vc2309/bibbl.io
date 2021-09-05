@@ -1,5 +1,5 @@
 from boto3.dynamodb.conditions import Key
-from lambda_folder.dao import DAOBase
+from . import DAOBase
 import os
 
 SNAP_SHOTS_TABLE = os.environ.get("SNAPSHOTS_TABLE_NAME") or 'snap-shots'

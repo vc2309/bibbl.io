@@ -4,7 +4,7 @@ import uuid
 from datetime import date, timedelta
 from collections import Counter
 # from dao.s3_dao import S3Dao # how is this working with lamdba
-from lambda_folder.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
+from ..dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
 
 class RawNoteEngine(object):
     def __init__(self) -> None:

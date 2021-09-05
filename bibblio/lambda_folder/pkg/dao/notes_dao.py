@@ -2,7 +2,7 @@ from typing import List
 import boto3
 import os
 from boto3.dynamodb.conditions import Key
-from lambda_folder.dao import DAOBase
+from . import DAOBase
 
 NOTES_TABLE = os.environ.get("TABLE_NAME")
 RAW_NOTES_TABLE = os.environ.get("RAW_NOTE_TABLE_NAME") or 'raw-notes'
