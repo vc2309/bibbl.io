@@ -5,9 +5,10 @@ from boto3.dynamodb.conditions import Key
 from . import DAOBase
 
 NOTES_TABLE = os.environ.get("TABLE_NAME")
-RAW_NOTES_TABLE = os.environ.get("RAW_NOTE_TABLE_NAME") or 'raw-notes'
-SMART_NOTES_TABLE = os.environ.get("SMART_NOTE_TABLE_NAME") or 'smart-notes'
+RAW_NOTES_TABLE = os.environ.get("RAW_NOTE_TABLE_NAME") or "raw-notes"
+SMART_NOTES_TABLE = os.environ.get("SMART_NOTE_TABLE_NAME") or "smart-notes"
 DB_ENDPOINT = os.environ.get("DB_ENDPOINT")
+
 
 class NotesDAO(DAOBase):
     """
@@ -24,8 +25,10 @@ class NotesDAO(DAOBase):
         params - notes - list - list of notes to save
         returns - boolean - success or not
         """
-        for item in notes: response = self.table_connector.put_item(Item = item)
+        for item in notes:
+            response = self.table_connector.put_item(Item=item)
         return True
+
     def get_notes_by_s3_objkey(self, s3_object_key: str) -> list:
         """
         Return all Note objects corresponding to the given  index = id
@@ -35,7 +38,7 @@ class NotesDAO(DAOBase):
         try:
             results = self.table_connector.query(
                 IndexName="s3_upload_object",
-                KeyConditionExpression=Key('s3_upload_object').eq(s3_object_key),
+                KeyConditionExpression=Key("s3_upload_object").eq(s3_object_key),
             )
             return results["Items"] if "Items" in results else []
         except Exception as e:
@@ -44,10 +47,10 @@ class NotesDAO(DAOBase):
 
 
 class RawNotesDAO(NotesDAO):
-    def __init__(self, table_name = RAW_NOTES_TABLE, key_name='note_id') -> None:
+    def __init__(self, table_name=RAW_NOTES_TABLE, key_name="note_id") -> None:
         super().__init__(table_name, key_name)
+
 
 class SmartNotesDAO(NotesDAO):
-    def __init__(self, table_name = SMART_NOTES_TABLE, key_name='smart_note_id') -> None:
+    def __init__(self, table_name=SMART_NOTES_TABLE, key_name="smart_note_id") -> None:
         super().__init__(table_name, key_name)
-
