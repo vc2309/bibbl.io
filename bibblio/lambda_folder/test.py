@@ -1,4 +1,3 @@
-
 from dao.raw_notes_dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO, UserDAO
 from dao.s3_dao import S3Dao
 from engine.raw_note_engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine
@@ -12,10 +11,10 @@ import app
 bucket_name = "bibbl-notefilebucket-1v8xy57fre02p"
 bucket_arn = "arn:aws:s3:::bibbl-notefilebucket-1v8xy57fre02p"
 object_key = "test_user/Extreme Economies-Notebook.html"
-RAW_NOTES_TABLE = 'raw-notes'
-SMART_NOTES_TABLE = 'smart-notes'
-SNAP_SHOTS_TABLE = 'snap-shots'
-USER_TABLE = 'user-table'
+RAW_NOTES_TABLE = "raw-notes"
+SMART_NOTES_TABLE = "smart-notes"
+SNAP_SHOTS_TABLE = "snap-shots"
+USER_TABLE = "user-table"
 db_client = boto3.client("dynamodb", endpoint_url="http://localhost:8000")
 test_note_number = 21
 s3_dao = S3Dao()
@@ -89,48 +88,44 @@ def apigw_event():
         "path": "/examplepath",
     }
 
+
 @pytest.fixture()
 def s3_event():
     """Generates API GW Event"""
     os.environ["AWS_SAM_STACK_NAME"] = "bibbl"
     return {
-    "Records": [
-    {
-      "eventVersion": "2.0",
-      "eventSource": "aws:s3",
-      "awsRegion": "us-west-2",
-      "eventTime": "1970-01-01T00:00:00.000Z",
-      "eventName": "ObjectCreated:Put",
-      "userIdentity": {
-        "principalId": "EXAMPLE"
-      },
-      "requestParameters": {
-        "sourceIPAddress": "127.0.0.1"
-      },
-      "responseElements": {
-        "x-amz-request-id": "EXAMPLE123456789",
-        "x-amz-id-2": "EXAMPLE123/5678abcdefghijklambdaisawesome/mnopqrstuvwxyzABCDEFGH"
-      },
-      "s3": {
-        "s3SchemaVersion": "1.0",
-        "configurationId": "testConfigRule",
-        "bucket": {
-          "name": bucket_name,
-          "ownerIdentity": {
-            "principalId": "EXAMPLE"
-          },
-          "arn": bucket_arn
-        },
-        "object": {
-          "key": object_key,
-          "size": 1024,
-          "eTag": "0123456789abcdef0123456789abcdef",
-          "sequencer": "0A1B2C3D4E5F678901"
-        }
-      }
+        "Records": [
+            {
+                "eventVersion": "2.0",
+                "eventSource": "aws:s3",
+                "awsRegion": "us-west-2",
+                "eventTime": "1970-01-01T00:00:00.000Z",
+                "eventName": "ObjectCreated:Put",
+                "userIdentity": {"principalId": "EXAMPLE"},
+                "requestParameters": {"sourceIPAddress": "127.0.0.1"},
+                "responseElements": {
+                    "x-amz-request-id": "EXAMPLE123456789",
+                    "x-amz-id-2": "EXAMPLE123/5678abcdefghijklambdaisawesome/mnopqrstuvwxyzABCDEFGH",
+                },
+                "s3": {
+                    "s3SchemaVersion": "1.0",
+                    "configurationId": "testConfigRule",
+                    "bucket": {
+                        "name": bucket_name,
+                        "ownerIdentity": {"principalId": "EXAMPLE"},
+                        "arn": bucket_arn,
+                    },
+                    "object": {
+                        "key": object_key,
+                        "size": 1024,
+                        "eTag": "0123456789abcdef0123456789abcdef",
+                        "sequencer": "0A1B2C3D4E5F678901",
+                    },
+                },
+            }
+        ]
     }
-  ]
-}
+
 
 @pytest.fixture(autouse=True, scope="session")
 def create_raw_notes_tables():
@@ -158,6 +153,7 @@ def create_raw_notes_tables():
     yield
     db_client.delete_table(**{"TableName": RAW_NOTES_TABLE})
 
+
 @pytest.fixture(autouse=True, scope="session")
 def create_smart_notes_tables():
     table = {
@@ -183,6 +179,7 @@ def create_smart_notes_tables():
     db_client.create_table(**table)
     yield
     db_client.delete_table(**{"TableName": SMART_NOTES_TABLE})
+
 
 @pytest.fixture(autouse=True, scope="session")
 def create_snap_shots_tables():
@@ -220,6 +217,7 @@ def create_snap_shots_tables():
     yield
     db_client.delete_table(**{"TableName": SNAP_SHOTS_TABLE})
 
+
 @pytest.fixture(autouse=True, scope="session")
 def create_user_tables():
     table = {
@@ -234,21 +232,28 @@ def create_user_tables():
     yield
     db_client.delete_table(**{"TableName": USER_TABLE})
 
+
 def test_note_file_handler(s3_event):
     app.note_file_handler(s3_event, "")
-    assert test_note_number == len(smart_notes_dao.get_item_by_index('s3_upload_object', object_key))
-    assert 0 <  len(snap_shot_dao.get_item_by_index('user_id', 'test_user'))
+    assert test_note_number == len(
+        smart_notes_dao.get_item_by_index("s3_upload_object", object_key)
+    )
+    assert 0 < len(snap_shot_dao.get_item_by_index("user_id", "test_user"))
+
 
 def test_email():
-    items = snap_shot_dao.get_item_by_index('delivery_date', '2021-09-01')
+    items = snap_shot_dao.get_item_by_index("delivery_date", "2021-09-01")
     snap_engine = SnapShotEngine()
     user_dao = UserDAO()
-    user_dao.create_user('test_user', 'yashvardhannevatia@gmail.com')
-    email_id = user_dao.get_user_by_userid('test_user')['email_id']
+    user_dao.create_user("test_user", "yashvardhannevatia@gmail.com")
+    email_id = user_dao.get_user_by_userid("test_user")["email_id"]
     email_engine = EmailEngine()
     for item in items:
-        content = snap_engine.get_snap_content_by_snap_id(item['snap_shot_id'], snap_shot_dao, smart_notes_dao)
+        content = snap_engine.get_snap_content_by_snap_id(
+            item["snap_shot_id"], snap_shot_dao, smart_notes_dao
+        )
         email_engine.send_email(email_id, content)
+
 
 # def test_send_snap():
 #     user_dao = UserDAO()
@@ -257,7 +262,7 @@ def test_email():
 #     print(email_id)
 #     content = SnapShotEngine().get_snap_content('test_user', snap_shot_dao, smart_notes_dao)
 #     print(content)
-    # send email here
+# send email here
 
 # def test_snap_content():
 #     snap_engine = SnapShotEngine()
@@ -296,7 +301,6 @@ def test_email():
 # def test_s3_dao():
 #     body = s3_dao.get_kindle_file(bucket_name, object_key)
 #     assert isinstance(body, str)
-
 
 
 # def test_snap_creation():
