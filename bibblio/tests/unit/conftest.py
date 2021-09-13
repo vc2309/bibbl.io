@@ -1,58 +1,215 @@
 import boto3
 import pytest
-
 import os
 
-os.environ["RAW_NOTES_TABLE"] = "raw-notes"
+os.environ["RAW_NOTE_TABLE_NAME"] = "my-table"
+os.environ["SMART_NOTE_TABLE_NAME"] = "smart-notes-table-test"
+os.environ["SNAPSHOTS_TABLE_NAME"] = "snapshots-table-test"
+os.environ["DB_ENDPOINT"] = "http://localhost:8000"
 db_client = boto3.client("dynamodb", endpoint_url="http://localhost:8000")
+from lambda_folder.pkg.dao import NotesDAO, SmartNotesDAO, SnapShotsDAO, RawNotesDAO
 
 
 @pytest.fixture(autouse=True, scope="session")
-def create_raw_notes_tables():
+def create_tables():
+    note_table_name, smart_note_table_name, snapshots_table_name = (
+        os.environ.get("RAW_NOTE_TABLE_NAME"),
+        os.environ.get("SMART_NOTE_TABLE_NAME"),
+        os.environ.get("SNAPSHOTS_TABLE_NAME"),
+    )
     table = {
-        "TableName": os.environ.get("RAW_NOTES_TABLE"),
+        "TableName": note_table_name,
         "AttributeDefinitions": [
             {"AttributeName": "note_id", "AttributeType": "S"},
-            {"AttributeName": "s3_upload_bucket", "AttributeType": "S"},
+            {"AttributeName": "s3_upload_object", "AttributeType": "S"},
         ],
         "KeySchema": [{"AttributeName": "note_id", "KeyType": "HASH"}],
         "GlobalSecondaryIndexes": [
             {
-                "IndexName": "s3_upload_bucket",
-                "KeySchema": [{"AttributeName": "s3_upload_bucket", "KeyType": "HASH"}],
+                "IndexName": "s3_upload_object",
+                "KeySchema": [{"AttributeName": "s3_upload_object", "KeyType": "HASH"}],
                 "Projection": {"ProjectionType": "ALL"},
                 "ProvisionedThroughput": {
-                    "ReadCapacityUnits": 1,
-                    "WriteCapacityUnits": 1,
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5,
                 },
             }
         ],
-        "ProvisionedThroughput": {"ReadCapacityUnits": 1, "WriteCapacityUnits": 1},
+        "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
     }
-    db_client.create_table(**table)
+
+    smart_note_table = {
+        "TableName": smart_note_table_name,
+        "AttributeDefinitions": [
+            {"AttributeName": "smart_note_id", "AttributeType": "S"},
+            {"AttributeName": "s3_upload_object", "AttributeType": "S"},
+        ],
+        "KeySchema": [{"AttributeName": "smart_note_id", "KeyType": "HASH"}],
+        "GlobalSecondaryIndexes": [
+            {
+                "IndexName": "s3_upload_object",
+                "KeySchema": [{"AttributeName": "s3_upload_object", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5,
+                },
+            }
+        ],
+        "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+    }
+
+    snapshots_table = {
+        "TableName": snapshots_table_name,
+        "AttributeDefinitions": [
+            {"AttributeName": "snapshot_id", "AttributeType": "S"},
+            {"AttributeName": "s3_upload_object", "AttributeType": "S"},
+            {"AttributeName": "user_id", "AttributeType": "S"},
+        ],
+        "KeySchema": [{"AttributeName": "snapshot_id", "KeyType": "HASH"}],
+        "GlobalSecondaryIndexes": [
+            {
+                "IndexName": "s3_upload_object",
+                "KeySchema": [{"AttributeName": "s3_upload_object", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5,
+                },
+            },
+            {
+                "IndexName": "user_id",
+                "KeySchema": [{"AttributeName": "user_id", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5,
+                },
+            },
+        ],
+        "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+    }
+
+    def delete_tables():
+        db_client.delete_table(**{"TableName": note_table_name})
+        db_client.delete_table(**{"TableName": smart_note_table_name})
+        db_client.delete_table(**{"TableName": snapshots_table_name})
+
+    try:
+        db_client.create_table(**table)
+        db_client.create_table(**smart_note_table)
+        db_client.create_table(**snapshots_table)
+    except Exception as e:
+        print("Error thrown : ", e)
+        delete_tables()
+        return
     yield
-    db_client.delete_table(**{"TableName": os.environ["RAW_NOTES_TABLE"]})
+    delete_tables()
+
+
+@pytest.fixture()
+def insert_smart_notes():
+    request = {
+        "Item": {
+            "smart_note_id": {"S": "example-smart-note-01"},
+            "text": {"S": "abcd 1234"},
+            "s3_upload_object": {"S": "vishnu.com"},
+        },
+        "TableName": "smart-notes-table-test",
+    }
+    db_client.put_item(**request)
+    request = {
+        "Item": {
+            "smart_note_id": {"S": "example-smart-note-02"},
+            "text": {"S": "xyz 1234"},
+            "s3_upload_object": {"S": "vishnu.com"},
+        },
+        "TableName": "smart-notes-table-test",
+    }
+    db_client.put_item(**request)
+    yield db_client
+    db_client.batch_write_item(
+        **{
+            "RequestItems": {
+                os.environ["SMART_NOTE_TABLE_NAME"]: [
+                    {
+                        "DeleteRequest": {
+                            "Key": {"smart_note_id": {"S": "example-smart-note-01"}}
+                        },
+                        "DeleteRequest": {
+                            "Key": {"smart_note_id": {"S": "example-smart-note-02"}}
+                        },
+                        "DeleteRequest": {
+                            "Key": {"smart_note_id": {"S": "example-smart-note-03"}}
+                        },
+                    }
+                ]
+            }
+        }
+    )
+
+
+@pytest.fixture()
+def insert_snapshots():
+    request = {
+        "Item": {
+            "snapshot_id": {"S": "example-snapshot-01"},
+            "user_id": {"S": "user01"},
+            "s3_upload_object": {"S": "vishnu.com"},
+            "smart_note_ids": {"SS": ["smart-note01", "smart-note02"]},
+        },
+        "TableName": "snapshots-table-test",
+    }
+    db_client.put_item(**request)
+    request = {
+        "Item": {
+            "snapshot_id": {"S": "example-snapshot-02"},
+            "user_id": {"S": "user01"},
+            "s3_upload_object": {"S": "vishnu.com"},
+            "smart_note_ids": {"SS": ["smart-note03", "smart-note02"]},
+        },
+        "TableName": "snapshots-table-test",
+    }
+    db_client.put_item(**request)
+    request = {
+        "TableName": "snapshots-table-test",
+        "IndexName": "user_id",
+        "KeyConditionExpression": "user_id = :v1",
+        "ExpressionAttributeValues": {":v1": {"S": "user01"}},
+    }
+    print(request)
+    results = db_client.query(**request)
+    print(results)
+    yield db_client
 
 
 @pytest.fixture()
 def insert_items():
     request = {
         "Item": {
-            'note_id': {"S": "example-note-01"},
-            's3_upload_bucket': {"S": "test_bucket"},
-            's3_upload_object': {"S": "test_object"},
-            'book_title': {"S":"test_title"},
-            'book_author': {"S":"test_author"},
-            'note_chapter': {"S":"test_chapter"},
-            'note_type_and_location': {"S":"test_location"},
-            'note_text': {"S":"test_text"},
+            "note_id": {"S": "example-note-01"},
+            "text": {"S": "abcd"},
+            "s3_upload_object": {"S": "vishnu.com"},
         },
-        "TableName": os.environ["RAW_NOTES_TABLE"],
+        "TableName": os.environ["RAW_NOTE_TABLE_NAME"],
     }
     db_client.put_item(**request)
     yield db_client
     db_client.delete_item(
-        **{
-        "TableName": os.environ["RAW_NOTES_TABLE"],
-        "Key": {"note_id": {"S": "example-note-01"}}}
+        **{"TableName": "my-table", "Key": {"note_id": {"S": "example-note-01"}}}
     )
+
+
+@pytest.fixture()
+def notes_dao():
+    return RawNotesDAO()
+
+
+@pytest.fixture()
+def smart_notes_dao():
+    return SmartNotesDAO()
+
+
+@pytest.fixture()
+def snapshots_dao():
+    return SnapShotsDAO()
