@@ -1,8 +1,4 @@
 pytest
 pytest-mock
-<<<<<<< HEAD
-boto3
-=======
 boto3
 uuid
->>>>>>> 42818d3e19211487f169d715a61c98fbd1788d87
