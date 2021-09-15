@@ -3,9 +3,10 @@ import urllib
 import boto3
 import uuid
 import os
+from datetime import date
 from bs4 import BeautifulSoup
-from pkg.engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine
-from pkg.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
+from pkg.engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine, EmailEngine
+from pkg.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO, UserDAO
 from pkg.dao import S3Dao
 
 RAW_NOTES_TABLE = os.environ.get("") or "raw-notes"

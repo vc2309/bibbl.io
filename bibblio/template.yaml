@@ -162,6 +162,7 @@ Resources:
   SnapDeliveryFunction:
     Type: AWS::Serverless::Function
     Properties:
+      CodeUri: lambda_folder/
       # CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-15ao8arzo1tzz/bibbl/00cf9ec66122de92bad89a85ce1af33e
       Handler: app.snap_delivery_handler
       Runtime: python3.8
@@ -169,10 +170,11 @@ Resources:
         InvocationLevel:
           Type: Schedule
           Properties:
-            Schedule: rate(5 minutes)
+            Schedule: rate(1 day)
       Policies:
       - AmazonDynamoDBFullAccess
       - AmazonS3FullAccess
+      - AmazonSESFullAccess
 Outputs:
   TestApi:
     Description: API Gateway endpoint URL for Prod stage for Test function
