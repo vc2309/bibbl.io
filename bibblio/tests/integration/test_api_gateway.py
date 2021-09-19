@@ -5,7 +5,7 @@ import boto3
 import requests
 
 """
-Make sure env variable AWS_SAM_STACK_NAME exists with the name of the stack we are going to test. 
+Make sure env variable AWS_SAM_STACK_NAME exists with the name of the stack we are going to test.
 """
 
 os.environ["AWS_SAM_STACK_NAME"] = "bibbl"
@@ -53,5 +53,3 @@ class TestApiGateway(TestCase):
         )
 
         self.api_endpoint = api_outputs[0]["OutputValue"]
-
-

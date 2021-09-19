@@ -3,9 +3,10 @@ import urllib
 import boto3
 import uuid
 import os
+from datetime import date
 from bs4 import BeautifulSoup
-from pkg.engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine
-from pkg.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
+from pkg.engine import RawNoteEngine, SmartNoteEngine, SnapShotEngine, EmailEngine
+from pkg.dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO, UserDAO
 from pkg.dao import S3Dao
 
 RAW_NOTES_TABLE = os.environ.get("") or "raw-notes"
@@ -52,3 +53,17 @@ def test_handler(event, context):
             }
         ),
     }
+
+
+def snap_delivery_handler(event, context):
+    snap_shot_dao = SnapShotsDAO()
+    items = snap_shot_dao.get_snaps_by_date(str(date.today()))
+    snap_engine = SnapShotEngine()
+    user_dao = UserDAO()
+    # user_dao.create_user('test_user', 'yashvardhannevatia@gmail.com')
+    email_id = user_dao.get_user_by_userid('test_user')['email_id']
+    email_engine = EmailEngine()
+    for item in items:
+        content = snap_engine.get_snap_content_by_snap_id(item['snap_shot_id'],
+         snap_shot_dao, SmartNotesDAO())
+        email_engine.send_email(email_id, content)
