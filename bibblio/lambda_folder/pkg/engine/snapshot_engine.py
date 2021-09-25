@@ -8,7 +8,7 @@ class SnapShotEngine(object):
     def __init__(self) -> None:
         super().__init__()
 
-    def create_snaps(self, smart_notes: List, chunk_size=5) -> List:
+    def create_snaps(self, smart_notes: List, chunk_size=3) -> List:
         """
         Create and return a list of Snapshots given the `smart_notes`
         """
