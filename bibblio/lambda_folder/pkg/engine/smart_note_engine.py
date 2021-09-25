@@ -8,15 +8,19 @@ class SmartNoteEngine(object):
         super().__init__()
 
     def trim_text(self, text: str) -> str:
+        """
+        A simple way to filter incomplete notes.
+        Also to extract complete sentences from the same.
+        """
         start_index, end_index = None, None
         text_len = len(text)
         for i in range(0, text_len):
             if start_index == None or end_index == None:
-                # the open quotation mark was copied from the text
+                # the open/close quotation mark was copied from the text
                 # not sure if this is the best way
                 if start_index == None and (text[i].isupper() or text[i] == "“"):
                     start_index = i
-                if end_index == None and text[text_len - i - 1] in [".","?","!","\""]:
+                if end_index == None and text[text_len - i - 1] in [".","?","!","”"]:
                     end_index = text_len - i - 1
         if start_index != None and end_index != None:
             return text[start_index:end_index + 1]
