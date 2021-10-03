@@ -33,15 +33,17 @@ def note_file_handler(event, context):
     print("Raw Notes saved, parsing for smart notes")
     smart_notes_engine = SmartNoteEngine()
     parsed_smart_notes = smart_notes_engine.create_smart_notes(parsed_notes)
+    if not parsed_smart_notes: return
     print("Raw Notes parsed, saving for smart notes")
     smart_notes_dao = SmartNotesDAO(SMART_NOTES_TABLE)
     saved = smart_notes_dao.save_notes(parsed_smart_notes)
     print("Smart Notes saved, creating snaps")
     snap_engine = SnapShotEngine()
-    snaps = snap_engine.create_snaps(parsed_smart_notes)
+    snaps = snap_engine.create_snaps(parsed_smart_notes, user_id)
     print("Saving snap shots")
     snap_shot_dao = SnapShotsDAO(SNAP_SHOTS_TABLE)
     snap_shot_dao.save_snapshot(snaps)
+    return
 
 
 def test_handler(event, context):
@@ -57,13 +59,17 @@ def test_handler(event, context):
 
 def snap_delivery_handler(event, context):
     snap_shot_dao = SnapShotsDAO()
-    items = snap_shot_dao.get_snaps_by_date(str(date.today()))
     snap_engine = SnapShotEngine()
     user_dao = UserDAO()
-    # user_dao.create_user('test_user', 'yashvardhannevatia@gmail.com')
-    email_id = user_dao.get_user_by_userid('test_user')['email_id']
     email_engine = EmailEngine()
-    for item in items:
-        content = snap_engine.get_snap_content_by_snap_id(item['snap_shot_id'],
+    delivery_snaps = snap_shot_dao.get_snaps_by_date(str(date.today()))
+    for snap in delivery_snaps:
+        content = snap_engine.get_snap_content_by_snap_id(snap['snap_shot_id'],
          snap_shot_dao, SmartNotesDAO())
+        email_id = user_dao.get_user_by_userid(snap['user_id'])['email_id']
         email_engine.send_email(email_id, content)
+        snap_shot_dao.update_snap_status(snap['snap_shot_id'], 'Delivered')
+        # for smart_note_id in snap["smart_note_list"]:
+        #     smart_note_dao.update_smart_note_status(smart_note_id, snap['snap_shot_id'])
+        # TODO: update status of snap
+        # TODO: update status of smart notes

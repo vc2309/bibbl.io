@@ -3,8 +3,7 @@ import boto3
 import os
 from boto3.dynamodb.conditions import Key
 
-USER_TABLE = "user-table"
-
+USER_TABLE = os.environ.get("USER_TABLE_NAME") or "user-table"
 
 class UserDAO:
     def __init__(self, table_name=USER_TABLE) -> None:

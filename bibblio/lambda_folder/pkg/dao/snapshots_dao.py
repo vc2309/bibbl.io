@@ -43,3 +43,16 @@ class SnapShotsDAO(DAOBase):
         for item in notes:
             response = self.table_connector.put_item(Item=item)
         return True
+
+    def update_snap_status(self, snap_shot_id, new_status):
+        response = self.table_connector.update_item(
+            Key={
+                self.primary_key: snap_shot_id,
+            },
+            UpdateExpression="set delivery_status=:s",
+            ExpressionAttributeValues={
+                ':s': new_status,
+            },
+            ReturnValues="UPDATED_NEW"
+        )
+        print("Updated status of snap shot", snap_shot_id)

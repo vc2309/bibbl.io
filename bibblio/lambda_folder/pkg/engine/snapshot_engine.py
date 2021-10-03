@@ -1,39 +1,73 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from typing import List
 import uuid
-from ..dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO
+from ..dao import RawNotesDAO, SmartNotesDAO, SnapShotsDAO, UserDAO
 
 
 class SnapShotEngine(object):
     def __init__(self) -> None:
         super().__init__()
 
-    def create_snaps(self, smart_notes: List, chunk_size=3) -> List:
+    def _get_latest_date(self, user_id):
+        snap_shot_dao = SnapShotsDAO()
+        today = date.today()
+        # TODO: make status an enum to avoid string compare
+        # NOTE: should we store the latest potential snap in the user table ?
+        # NOTE: in snap table, we can only put pending snaps and create a separate table for old snaps ?
+        existing_user_snaps = snap_shot_dao.get_snapshots_by_user_id(user_id)
+        if not existing_user_snaps: return today
+        pending_user_snaps = list(filter(lambda x: (x['delivery_status'] == 'Pending'), existing_user_snaps))
+        if not pending_user_snaps: return today
+        pending_dates = list(map(lambda x:datetime.strptime(x['delivery_date'], '%Y-%m-%d'), pending_user_snaps))
+        latest_date = max(pending_dates).date()
+        return latest_date + timedelta(days=1)
+
+    def _get_chunk_size(self, user_id):
+        user_dao = UserDAO()
+        try:
+            chunk_size = int(user_dao.get_user_by_userid(user_id)['notes_in_snap'])
+            return chunk_size
+        except:
+            return 1
+
+    def _send_smart_note_update(self, smart_id_2_snap_id):
+        smart_note_dao = SmartNotesDAO()
+        for smart_id, snap_id in smart_id_2_snap_id.items():
+            smart_note_dao.update_snap_id(smart_id, snap_id)
+
+    def create_snaps(self, smart_notes: List, user_id='') -> List:
         """
         Create and return a list of Snapshots given the `smart_notes`
         """
-        chunks = [
+
+        if not user_id: user_id = smart_notes[0]["user_id"]
+        chunk_size = self._get_chunk_size(user_id)
+        latest_date = self._get_latest_date(user_id)
+        smart_note_chunks = [
             smart_notes[x : x + chunk_size]
             for x in range(0, len(smart_notes), chunk_size)
         ]
-        print("len chunks", len(chunks))
-        snapshots = []
-        today = date.today()
-        for i, item in enumerate(chunks):
-            obj = {
-                "snap_shot_id": str(uuid.uuid1()),
-                "user_id": item[0]["user_id"],
-                "smart_note_list": [x["smart_note_id"] for x in item],
-                "delivery_date": str(today + timedelta(days=i)),
-                "status": "Pending_Delivery",
-            }
-            print(obj)
-            snapshots.append(obj)
-        return snapshots
+        print("len smart_note_chunks", len(smart_note_chunks))
 
-    def get_snap_content_by_snap_id(
-        self, snap_id, snap_shots_dao=None, smart_notes_dao=None
-    ):
+        final_snapshots = []
+        smart_id_2_snap_id = {}
+        for i, snap_content in enumerate(smart_note_chunks):
+            snap_shot_id = str(uuid.uuid1())
+            for smart_note in snap_content:
+                smart_id_2_snap_id[smart_note["smart_note_id"]] = snap_shot_id
+            snap_obj = {
+                "snap_shot_id": snap_shot_id,
+                "user_id": user_id,
+                "smart_note_list": [x["smart_note_id"] for x in snap_content],
+                "delivery_date": str(latest_date + timedelta(days=i)),
+                "delivery_status": "Pending",
+            }
+            print(snap_obj)
+            final_snapshots.append(snap_obj)
+        self._send_smart_note_update(smart_id_2_snap_id)
+        return final_snapshots
+
+    def get_snap_content_by_snap_id( self, snap_id, snap_shots_dao=None, smart_notes_dao=None):
         """
         Gets snap from dynamodb, get smart notes in snap, create final
         snap content

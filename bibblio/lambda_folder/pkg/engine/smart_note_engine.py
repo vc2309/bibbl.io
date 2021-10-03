@@ -7,7 +7,7 @@ class SmartNoteEngine(object):
     def __init__(self) -> None:
         super().__init__()
 
-    def trim_text(self, text: str) -> str:
+    def _trim_text(self, text: str) -> str:
         """
         A simple way to filter incomplete notes.
         Also to extract complete sentences from the same.
@@ -32,8 +32,10 @@ class SmartNoteEngine(object):
         """
         smart_notes = []
         for note in raw_notes:
-            trimmed_text = self.trim_text(note["note_text"].replace("\n", ""))
+            trimmed_text = self._trim_text(note["note_text"].replace("\n", ""))
             if not trimmed_text: continue
+            print("Raw Text:", note["note_text"])
+            print("Trimmed Text: ", trimmed_text)
             try:
                 obj = {
                     "smart_note_id": str(uuid.uuid1()),
