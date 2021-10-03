@@ -22,7 +22,7 @@ class DAOBase(object):
             self.client = boto3.resource("dynamodb", endpoint_url=DB_ENDPOINT)
         # for testing -> was not working with env variable for some reason.
         # need to investigate further
-        self.client = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
+        # self.client = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
         self.table_name = table_name
         self.table_connector = self.client.Table(self.table_name)
         self.primary_key = key_name
