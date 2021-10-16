@@ -18,11 +18,11 @@ def note_file_handler(event, context):
     print("Object Uploaded in S3")
     print("event", event)
     print("context", context)
-    user_id = "test_user"
     bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     object_key = urllib.parse.unquote_plus(
         event["Records"][0]["s3"]["object"]["key"], encoding="utf-8"
     )
+    user_id = get_username(object_key)
     print("Bucket Name of Object", bucket_name)
     print("Object Key of Object", object_key)
     parser = RawNoteEngine()
@@ -69,3 +69,10 @@ def snap_delivery_handler(event, context):
         email_id = user_dao.get_user_by_userid(snap['user_id'])['email_id']
         email_engine.send_email(email_id, content)
         snap_shot_dao.update_snap_status(snap['snap_shot_id'], 'Delivered')
+
+def get_username(s3Key : str) -> str :
+    """
+    Fetch username given the s3 object key if valid, else return empty string
+    """
+    segments = s3Key.split('/')
+    return "" if len(segments)<2 else segments[0]
