@@ -25,6 +25,10 @@ def note_file_handler(event, context):
     user_id = get_username(object_key)
     print("Bucket Name of Object", bucket_name)
     print("Object Key of Object", object_key)
+    print("UserID :", user_id )
+    if not user_id:
+        print("No user_id, invalid key, not processing")
+        return
     parser = RawNoteEngine()
     parsed_notes = parser.parse_kindle_file(bucket_name, object_key, user_id, S3Dao())
     print("Kindle file parsed, Saving notes")
