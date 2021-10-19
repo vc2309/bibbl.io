@@ -33,4 +33,4 @@ def test_get_snapshots_empty(snapshots_dao):
 def test_update_snap_status(insert_snapshots, snapshots_dao):
     snapshots_dao.update_snap_status("example-snapshot-01", "Delivered")
     snap = snapshots_dao.get_item_by_id("example-snapshot-01")
-    snap["delivery_status"] == "Delivered"
+    assert snap["delivery_status"] == "Delivered"

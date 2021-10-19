@@ -69,7 +69,3 @@ def snap_delivery_handler(event, context):
         email_id = user_dao.get_user_by_userid(snap['user_id'])['email_id']
         email_engine.send_email(email_id, content)
         snap_shot_dao.update_snap_status(snap['snap_shot_id'], 'Delivered')
-        # for smart_note_id in snap["smart_note_list"]:
-        #     smart_note_dao.update_smart_note_status(smart_note_id, snap['snap_shot_id'])
-        # TODO: update status of snap
-        # TODO: update status of smart notes
