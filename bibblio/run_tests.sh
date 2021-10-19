@@ -1,4 +1,4 @@
 docker-compose up&
 sleep 5
-pytest tests/unit
+pytest tests/unit -vrP
 docker-compose down

@@ -54,3 +54,16 @@ class RawNotesDAO(NotesDAO):
 class SmartNotesDAO(NotesDAO):
     def __init__(self, table_name=SMART_NOTES_TABLE, key_name="smart_note_id") -> None:
         super().__init__(table_name, key_name)
+
+    def update_snap_id(self, smart_note_id, snap_shot_id):
+            response = self.table_connector.update_item(
+                Key={
+                    self.primary_key: smart_note_id,
+                },
+                UpdateExpression="set snap_id=:s",
+                ExpressionAttributeValues={
+                    ':s': snap_shot_id,
+                },
+                ReturnValues="UPDATED_NEW"
+            )
+            print("Update snapid of smart note", smart_note_id)
