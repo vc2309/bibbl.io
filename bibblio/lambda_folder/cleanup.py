@@ -16,7 +16,7 @@ object_key_list = [
     "test_user/Extreme Economies-Notebook.html",
     "test_user/Being Mortal-Notebook.html.html",
     "test_user/Zero to One-Notebook.html",
-    "test_user/The Righteous Mind-Notebook.html"
+    "test_user/The Righteous Mind-Notebook.html",
 ]
 
 for object_key in object_key_list:

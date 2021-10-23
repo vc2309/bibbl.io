@@ -20,10 +20,10 @@ class SmartNoteEngine(object):
                 # not sure if this is the best way
                 if start_index == None and (text[i].isupper() or text[i] == "“"):
                     start_index = i
-                if end_index == None and text[text_len - i - 1] in [".","?","!","”"]:
+                if end_index == None and text[text_len - i - 1] in [".", "?", "!", "”"]:
                     end_index = text_len - i - 1
         if start_index != None and end_index != None:
-            return text[start_index:end_index + 1]
+            return text[start_index : end_index + 1]
         return ""
 
     def create_smart_notes(self, raw_notes: List) -> List:
@@ -33,7 +33,8 @@ class SmartNoteEngine(object):
         smart_notes = []
         for note in raw_notes:
             trimmed_text = self._trim_text(note["note_text"].replace("\n", ""))
-            if not trimmed_text: continue
+            if not trimmed_text:
+                continue
             print("Raw Text:", note["note_text"])
             print("Trimmed Text: ", trimmed_text)
             try:
