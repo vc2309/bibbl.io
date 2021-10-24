@@ -51,8 +51,8 @@ class SnapShotsDAO(DAOBase):
             },
             UpdateExpression="set delivery_status=:s",
             ExpressionAttributeValues={
-                ':s': new_status,
+                ":s": new_status,
             },
-            ReturnValues="UPDATED_NEW"
+            ReturnValues="UPDATED_NEW",
         )
         print("Updated status of snap shot", snap_shot_id)

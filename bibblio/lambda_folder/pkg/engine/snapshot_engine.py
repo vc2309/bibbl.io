@@ -15,17 +15,29 @@ class SnapShotEngine(object):
         # NOTE: should we store the latest potential snap in the user table ?
         # NOTE: in snap table, we can only put pending snaps and create a separate table for old snaps ?
         existing_user_snaps = snap_shot_dao.get_snapshots_by_user_id(user_id)
-        if not existing_user_snaps: return today
-        pending_user_snaps = list(filter(lambda x: (x['delivery_status'] == 'Pending'), existing_user_snaps))
-        if not pending_user_snaps: return today
-        pending_dates = list(map(lambda x:datetime.strptime(x['delivery_date'], '%Y-%m-%d'), pending_user_snaps))
+        if not existing_user_snaps:
+            return today
+        print(existing_user_snaps)
+        pending_user_snaps = list(
+            filter(
+                lambda x: (x.get("delivery_status") == "Pending"), existing_user_snaps
+            )
+        )
+        if not pending_user_snaps:
+            return today
+        pending_dates = list(
+            map(
+                lambda x: datetime.strptime(x["delivery_date"], "%Y-%m-%d"),
+                pending_user_snaps,
+            )
+        )
         latest_date = max(pending_dates).date()
         return latest_date + timedelta(days=1)
 
     def _get_chunk_size(self, user_id):
         user_dao = UserDAO()
         try:
-            chunk_size = int(user_dao.get_user_by_userid(user_id)['notes_in_snap'])
+            chunk_size = 3  # TO DO : Make this configurable by user
             return chunk_size
         except:
             return 1
@@ -35,12 +47,13 @@ class SnapShotEngine(object):
         for smart_id, snap_id in smart_id_2_snap_id.items():
             smart_note_dao.update_snap_id(smart_id, snap_id)
 
-    def create_snaps(self, smart_notes: List, user_id='') -> List:
+    def create_snaps(self, smart_notes: List, user_id="") -> List:
         """
         Create and return a list of Snapshots given the `smart_notes`
         """
 
-        if not user_id: user_id = smart_notes[0]["user_id"]
+        if not user_id:
+            user_id = smart_notes[0]["user_id"]
         chunk_size = self._get_chunk_size(user_id)
         latest_date = self._get_latest_date(user_id)
         smart_note_chunks = [
@@ -67,7 +80,9 @@ class SnapShotEngine(object):
         self._send_smart_note_update(smart_id_2_snap_id)
         return final_snapshots
 
-    def get_snap_content_by_snap_id( self, snap_id, snap_shots_dao=None, smart_notes_dao=None):
+    def get_snap_content_by_snap_id(
+        self, snap_id, snap_shots_dao=None, smart_notes_dao=None
+    ):
         """
         Gets snap from dynamodb, get smart notes in snap, create final
         snap content
